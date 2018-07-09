@@ -1,3 +1,4 @@
+import os
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404
 
@@ -10,7 +11,7 @@ from .models import Question, Choice
 from django.template import loader
 
 class IndexView(generic.ListView):
-    
+
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'
 

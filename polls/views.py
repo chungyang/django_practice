@@ -1,7 +1,9 @@
 import os
 
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -12,7 +14,10 @@ from django.views import generic
 
 from .models import Question, Choice
 
-class IndexView(generic.ListView):
+
+class IndexView(LoginRequiredMixin,generic.ListView):
+
+    login_url = 'login/'
 
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'
@@ -22,12 +27,19 @@ class IndexView(generic.ListView):
             pub_date__lte = timezone.now()
         ).order_by('-pub_date')[:5]
 
-class DetailView(generic.DetailView):
+
+class DetailView(LoginRequiredMixin,generic.DetailView):
+
+    login_url = 'login/'
+
     model = Question
     template_name = 'polls/details.html'
 
 
-class ResultsView(generic.DetailView):
+class ResultsView(LoginRequiredMixin,generic.DetailView):
+
+    login_url = 'login/'
+
     model = Question
     template_name = 'polls/results.html'
 
@@ -59,10 +71,8 @@ def signup(request):
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
-            user.is_staff = True
-            user.save()
             login(request, user)
-            return redirect('home/')
+            return redirect('polls:index')
     else:
         form = UserCreationForm()
     return render(request, 'polls/signup.html', {'form': form})

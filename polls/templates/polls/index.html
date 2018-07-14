@@ -17,3 +17,13 @@
     <p>No polls are available.</p>
 {% endif %}
 
+{% if user.is_authenticated %}
+
+    <form method="post" action="{% url 'polls:logout'%}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Log Out</button>
+    </form>
+
+{% endif %}
+

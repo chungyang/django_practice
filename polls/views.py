@@ -1,7 +1,6 @@
 import os
 
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
@@ -14,9 +13,11 @@ from django.views import generic
 
 from .models import Question, Choice
 
+from django.contrib.auth import logout as django_logout
 
-class IndexView(LoginRequiredMixin,generic.ListView):
 
+
+class IndexView(LoginRequiredMixin, generic.ListView):
     login_url = 'login/'
 
     template_name = 'polls/index.html'
@@ -24,20 +25,18 @@ class IndexView(LoginRequiredMixin,generic.ListView):
 
     def get_queryset(self):
         return Question.objects.filter(
-            pub_date__lte = timezone.now()
+            pub_date__lte=timezone.now()
         ).order_by('-pub_date')[:5]
 
 
-class DetailView(LoginRequiredMixin,generic.DetailView):
-
+class DetailView(LoginRequiredMixin, generic.DetailView):
     login_url = 'login/'
 
     model = Question
     template_name = 'polls/details.html'
 
 
-class ResultsView(LoginRequiredMixin,generic.DetailView):
-
+class ResultsView(LoginRequiredMixin, generic.DetailView):
     login_url = 'login/'
 
     model = Question
@@ -45,7 +44,6 @@ class ResultsView(LoginRequiredMixin,generic.DetailView):
 
 
 def vote(request, question_id):
-
     question = get_object_or_404(Question, pk=question_id)
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
@@ -62,6 +60,13 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+
+def logout(request):
+    if request.method == 'POST':
+        django_logout(request)
+
+        return redirect('polls:login')
 
 def signup(request):
     if request.method == 'POST':
